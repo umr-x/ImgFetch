@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<!--
+ImgFetch - smart image downloader
+Copyright (C) 2026 ImgFetch Developer
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>ImgFetch, Annotate screenshot</title>
+  <link rel="stylesheet" href="../shared/ui.css">
+  <style>
+    body { max-width: 1100px; margin: 0 auto; padding: 20px 20px 60px; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 12px 0; }
+    .tool { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; font-size: 13px; color: var(--text); }
+    .tool svg { width: 16px; height: 16px; flex: none; }
+    .tool[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .tool:disabled { opacity: 0.45; cursor: default; }
+    .swatch { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; padding: 0; }
+    .swatch[aria-pressed="true"] { border-color: var(--text); }
+    .stage { position: relative; display: inline-block; max-width: 100%; border-radius: 8px; overflow: hidden; background: var(--surface-2); }
+    #editor { display: block; max-width: 100%; height: auto; cursor: crosshair; touch-action: none; }
+    #textWrap { position: absolute; display: none; z-index: 5; }
+    #textInput { font-size: 16px; padding: 4px 8px; border: 2px solid var(--primary); border-radius: 6px; background: var(--surface); color: var(--text); }
+    #textClose { position: absolute; top: -11px; right: -11px; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 13px; line-height: 1; cursor: pointer; padding: 0; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
+    #textClose:hover { background: var(--danger,#e5484d); color: #fff; border-color: var(--danger,#e5484d); }
+    .actions { display: flex; gap: 8px; margin-top: 14px; }
+    .kbd-hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="brand" style="margin-bottom:8px;">
+    <img class="brand-mark" src="../icons/icon-32.png" alt="" aria-hidden="true">
+    <div>
+      <div class="brand-name">ImgFetch</div>
+      <div class="brand-sub">Annotate screenshot</div>
+    </div>
+  </div>
+
+  <div id="loading" class="empty">
+    <div class="spinner" role="status" aria-label="Loading"></div>
+    <p>Loading screenshot…</p>
+  </div>
+
+  <div id="content" hidden>
+    <div class="toolbar" role="toolbar" aria-label="Annotation tools">
+      <button class="tool" data-tool="pen" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg><span>Pen</span></button>
+      <button class="tool" data-tool="arrow" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg><span>Arrow</span></button>
+      <button class="tool" data-tool="rect" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/></svg><span>Rectangle</span></button>
+      <button class="tool" data-tool="circle" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg><span>Circle</span></button>
+      <button class="tool" data-tool="text" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg><span>Text</span></button>
+      <button class="tool" data-tool="pixelate" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg><span>Pixelate</span></button>
+      <span style="width:8px"></span>
+      <button class="swatch" data-color="#e5484d" style="background:#e5484d" aria-pressed="true" aria-label="Red"></button>
+      <button class="swatch" data-color="#e8930c" style="background:#e8930c" aria-pressed="false" aria-label="Orange"></button>
+      <button class="swatch" data-color="#2f9e6e" style="background:#2f9e6e" aria-pressed="false" aria-label="Green"></button>
+      <button class="swatch" data-color="#3e8ef7" style="background:#3e8ef7" aria-pressed="false" aria-label="Blue"></button>
+      <button class="swatch" data-color="#111111" style="background:#111111" aria-pressed="false" aria-label="Black"></button>
+      <button class="swatch" data-color="#ffffff" style="background:#ffffff;border-color:#ccc" aria-pressed="false" aria-label="White"></button>
+      <span style="width:8px"></span>
+      <button class="tool" data-width="3" aria-pressed="false">Thin</button>
+      <button class="tool" data-width="6" aria-pressed="true">Medium</button>
+      <button class="tool" data-width="12" aria-pressed="false">Thick</button>
+      <span style="width:8px"></span>
+      <button class="tool" id="btnUndo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5 5.5 5.5 0 0 1-5.5 5.5H11"/></svg><span>Undo</span></button>
+      <button class="tool" id="btnClear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/></svg><span>Clear</span></button>
+    </div>
+
+    <div class="stage" id="stage">
+      <canvas id="editor"></canvas>
+      <div id="textWrap">
+        <input id="textInput" type="text" placeholder="Type text, Enter to place" maxlength="120">
+        <button id="textClose" type="button" aria-label="Cancel text">✕</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="btnSave" class="btn btn-primary"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg> Save</button>
+      <button id="btnCancel" class="btn btn-ghost">Discard</button>
+    </div>
+    <p class="kbd-hint">Tip: drag on the image to draw. Text tool: click where the text should go, type, press Enter. Click placed text to select it, drag to move, press Delete or Backspace to remove. Blur: drag over the area to hide.</p>
+  </div>
+
+  <script src="../shared/ui.js"></script>
+    <script src="annotate.js"></script>
+</body>
+</html>

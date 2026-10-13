@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<!--
+ImgFetch - smart image downloader
+Copyright (C) 2026 ImgFetch Developer
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>ImgFetch, Image info</title>
+  <link rel="stylesheet" href="../shared/ui.css">
+  <style>
+    body { max-width: 640px; margin: 0 auto; padding: 28px 20px 60px; }
+    .preview { width: 100%; border-radius: 8px; background: var(--surface-2); max-height: 340px; object-fit: contain; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+    input.link { font-family: ui-monospace, monospace; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="brand" style="margin-bottom:16px;">
+    <img class="brand-mark" src="../icons/icon-32.png" alt="" aria-hidden="true">
+    <div>
+      <div class="brand-name">ImgFetch</div>
+      <div class="brand-sub">Image info</div>
+    </div>
+  </div>
+
+  <div id="loading" class="empty">
+    <div class="spinner" role="status" aria-label="Loading"></div>
+    <p>Reading image details…</p>
+  </div>
+
+  <div id="content" hidden>
+    <div class="card">
+      <img id="preview" class="preview" alt="Image preview">
+      <dl class="kv" id="kv"></dl>
+      <div class="field" style="margin-top:12px;">
+        <label for="link">Direct link</label>
+        <input type="text" id="link" class="link" readonly>
+      </div>
+      <div class="actions">
+        <button id="btnDownload" class="btn btn-primary">Smart Download</button>
+        <button id="btnCopy" class="btn btn-ghost">Copy link</button>
+        <button id="btnPng" class="btn btn-ghost">Save as PNG</button>
+        <button id="btnJpg" class="btn btn-ghost">Save as JPG</button>
+        <button id="btnWebp" class="btn btn-ghost">Save as WebP</button>
+        <button id="btnAvif" class="btn btn-ghost">Save as AVIF</button>
+        <button id="btnOpen" class="btn btn-ghost">Open original</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../shared/ui.js"></script>
+  <script type="module" src="info.js"></script>
+</body>
+</html>

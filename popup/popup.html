@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<!--
+ImgFetch - smart image downloader
+Copyright (C) 2026 ImgFetch Developer
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>ImgFetch</title>
+  <link rel="stylesheet" href="../shared/ui.css">
+  <style>
+    html, body { width: 400px; }
+    body { max-height: 600px; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px; border-bottom: 1px solid var(--border);
+      background: var(--surface); position: sticky; top: 0; z-index: 10;
+    }
+    main { overflow-y: auto; padding: 14px; flex: 1; }
+    .hero { text-align: center; padding: 26px 10px 10px; }
+    .hero .glyph {
+      width: 64px; height: 64px; border-radius: 18px; margin: 0 auto 12px;
+      background: linear-gradient(135deg, #6c63ff 0%, #4a3fd1 55%, #22d3ee 130%);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 30px; font-weight: 800;
+      box-shadow: 0 8px 24px rgba(91, 80, 230, 0.4);
+    }
+    .hero h1 { font-size: 17px; margin: 0 0 6px; }
+    .hero p { color: var(--muted); font-size: 13px; margin: 0 0 18px; }
+    .action-list { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+    /* D1: screenshot group as one row of four icon buttons with labels. */
+    .shot-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
+    .shot-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 10px 4px; border: 1px solid var(--border); border-radius: 12px;
+      background: var(--surface); color: var(--text); cursor: pointer;
+      font-size: 11px; font-weight: 600;
+      transition: border-color .15s ease, background .15s ease, transform .15s ease;
+    }
+    .shot-btn:hover { border-color: var(--primary); background: var(--surface-2); }
+    .shot-btn:active { transform: translateY(1px); }
+    .shot-btn:focus-visible { outline: none; box-shadow: var(--focus); }
+    .shot-btn svg { color: var(--muted); }
+    .shot-btn:hover svg { color: var(--primary); }
+    @media (prefers-reduced-motion: reduce) {
+      .shot-btn { transition: none; }
+    }
+    .toolbar { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+    .toolbar .row { flex-wrap: wrap; }
+    .grid-wrap { margin: 4px -2px; }
+    .footerbar {
+      position: sticky; bottom: 0; background: var(--bg); padding: 10px 0 2px;
+      border-top: 1px solid var(--border); margin-top: 10px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .q-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .q-item:last-child { border-bottom: 0; }
+    .q-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+    .q-pending { background: var(--muted); }
+    .q-active { background: var(--primary); animation: sx-pulse 1s ease infinite; }
+    .q-done { background: var(--success); }
+    .q-failed { background: var(--danger); }
+    .icon-btn[aria-pressed="true"] { background: var(--surface-2); color: var(--primary); }
+    #homeStatus { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+    #homeStatus[hidden] { display: none; }
+    .status-card {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;
+      background: var(--surface); font-size: 13px;
+    }
+    .status-card-title { font-weight: 600; }
+    .q-cancelled { background: var(--warning); }
+    @keyframes sx-pulse { 50% { opacity: 0.4; } }
+    .hist-day { font-weight: 700; font-size: 12.5px; color: var(--muted); margin: 14px 0 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .hist-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .hist-item .fmt { font-size: 10px; font-weight: 700; background: var(--surface-2); border-radius: 6px; padding: 3px 7px; color: var(--muted); text-transform: uppercase; }
+    .preview-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+    .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13px; margin: 10px 0; }
+    .kv dt { color: var(--muted); } .kv dd { margin: 0; word-break: break-all; }
+    select.inline { width: auto; padding: 6px 8px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img class="brand-mark" src="../icons/icon-32.png" alt="" aria-hidden="true">
+      <div>
+        <div class="brand-name">ImgFetch</div>
+        <div class="brand-sub">Smart Image Downloader</div>
+      </div>
+    </div>
+    <nav class="row" aria-label="ImgFetch navigation">
+      <button id="navHome" class="icon-btn" title="Home" aria-label="Home" aria-pressed="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+      </button>
+      <button id="navHistory" class="icon-btn" title="Download history" aria-label="Download history">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      </button>
+      <button id="navSettings" class="icon-btn" title="ImgFetch settings" aria-label="ImgFetch settings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.01a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55h.01a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.01a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"/></svg>
+      </button>
+    </nav>
+  </header>
+
+  <main class="pane-anim" id="viewHome" aria-label="Home">
+    <section class="pane-anim" id="paneIdle">
+      <div class="hero">
+        <img class="glyph" src="../icons/icon-128.png" alt="" aria-hidden="true">
+        <h1>Grab images from any page</h1>
+        <p>Scan the page, pick what you want, and save the best available version.</p>
+        <button id="btnScan" class="btn btn-primary btn-block">Scan this page</button>
+        <div class="shot-row" role="group" aria-label="Screenshot">
+          <button id="btnShotVisible" class="shot-btn" title="Capture visible page" aria-label="Capture visible page">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+            <span>Visible</span>
+          </button>
+          <button id="btnShotArea" class="shot-btn" title="Capture selected area" aria-label="Capture selected area">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
+            <span>Area</span>
+          </button>
+          <button id="btnShotElement" class="shot-btn" title="Capture element" aria-label="Capture element">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+            <span>Element</span>
+          </button>
+          <button id="btnShotFull" class="shot-btn" title="Capture full page" aria-label="Capture full page">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
+            <span>Full page</span>
+          </button>
+        </div>
+        <div id="homeStatus" hidden></div>
+      </div>
+    </section>
+
+    <section class="pane-anim" id="paneScanning" hidden>
+      <div class="empty">
+        <div class="spinner" role="status" aria-label="Scanning"></div>
+        <p><strong>Scanning page…</strong></p>
+        <p class="small" id="scanStatus" role="status" aria-live="polite">Looking for images</p>
+        <div class="progress" style="max-width: 240px; margin: 12px auto 0;"><i id="scanBar"></i></div>
+      </div>
+    </section>
+
+    <section class="pane-anim" id="paneResults" hidden>
+      <div class="spread" style="margin-bottom:10px;">
+        <div>
+          <div class="section-title" id="resTitle" style="margin:0;">Results</div>
+          <div class="small muted" id="resSub"></div>
+        </div>
+      </div>
+      <div class="toolbar">
+        <div class="row">
+          <input type="text" id="search" placeholder="Search images…" aria-label="Search images" style="flex:1;">
+        </div>
+        <div class="row" role="group" aria-label="Size filter">
+          <button class="chip" data-size="any" aria-pressed="true">Any size</button>
+          <button class="chip" data-size="small" aria-pressed="false">&lt; 400px</button>
+          <button class="chip" data-size="medium" aria-pressed="false">400px+</button>
+          <button class="chip" data-size="large" aria-pressed="false">1200px+</button>
+        </div>
+        <div class="row">
+          <select id="filterFormat" class="inline" aria-label="Format filter">
+            <option value="">All formats</option>
+            <option value="jpg">JPG</option>
+            <option value="png">PNG</option>
+            <option value="webp">WebP</option>
+            <option value="gif">GIF</option>
+            <option value="avif">AVIF</option>
+          </select>
+          <select id="filterOrient" class="inline" aria-label="Orientation filter">
+            <option value="">Any orientation</option>
+            <option value="landscape">Landscape</option>
+            <option value="portrait">Portrait</option>
+            <option value="square">Square</option>
+          </select>
+          <select id="sortMode" class="inline" aria-label="Sort images">
+            <option value="order">Page order</option>
+            <option value="largest">Largest first</option>
+            <option value="smallest">Smallest first</option>
+          </select>
+        </div>
+        <div class="row small">
+          <button id="selAll" class="btn btn-sm btn-ghost">Select all</button>
+          <button id="selNone" class="btn btn-sm btn-ghost">Select none</button>
+          <button id="selInvert" class="btn btn-sm btn-ghost">Invert</button>
+          <span class="muted" id="resultCount" style="margin-left:auto;"></span>
+        </div>
+      </div>
+      <div id="grid" class="grid grid-wrap" role="group" aria-label="Found images"></div>
+      <div class="footerbar">
+        <div class="row">
+          <div class="segmented" role="group" aria-label="Download quality">
+            <button id="qSmart" aria-pressed="true">Smart Download</button>
+            <button id="qNormal" aria-pressed="false">As shown</button>
+          </div>
+          <select id="dlFormat" class="inline" aria-label="Download format" style="margin-left:auto;">
+            <option value="as-is">Original format</option>
+            <option value="png">PNG</option>
+            <option value="jpg">JPG</option>
+            <option value="webp">WebP</option>
+            <option value="avif">AVIF</option>
+          </select>
+        </div>
+        <div class="row">
+          <label class="small" style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+            <input type="checkbox" id="bulkBest">
+            <span title="Probe each image for a higher-quality source before downloading. Slower, can trigger rate limits on some sites.">Try best quality for bulk download</span>
+          </label>
+        </div>
+        <button id="btnDownload" class="btn btn-primary btn-block">Download selected</button>
+        <button id="btnZip" class="btn btn-ghost btn-block" title="Pack the selected images into one .zip file, exactly as shown on the page (no Smart quality upgrade inside ZIPs)">Download selected as ZIP</button>
+        <button id="btnRescan" class="btn btn-ghost btn-block">Scan again</button>
+      </div>
+    </section>
+
+    <section class="pane-anim" id="paneQueue" hidden>
+      <h2 class="section-title">Downloads</h2>
+      <p class="section-desc" id="queueSummary" role="status" aria-live="polite">Preparing…</p>
+      <div class="progress" style="margin-bottom:12px;"><i id="queueBar"></i></div>
+      <div id="queueList"></div>
+      <div class="row" style="margin-top:12px;">
+        <button id="btnQueueRetry" class="btn btn-sm btn-ghost">Retry failed</button>
+        <button id="btnQueueCancel" class="btn btn-sm btn-danger">Cancel</button>
+        <button id="btnQueueClear" class="btn btn-sm btn-ghost" style="margin-left:auto;">Clear finished</button>
+      </div>
+      <button id="btnBack" class="btn btn-ghost btn-block" style="margin-top:12px;">Back to results</button>
+    </section>
+  </main>
+
+  <main class="pane-anim" id="viewHistory" hidden aria-label="History">
+    <div class="spread">
+      <h2 class="section-title" style="margin:0;">Download history</h2>
+      <button id="btnClearHistory" class="btn btn-sm btn-danger">Clear</button>
+    </div>
+    <div id="historyList"></div>
+  </main>
+
+  <div id="modalRoot"></div>
+
+  <script src="../shared/ui.js"></script>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

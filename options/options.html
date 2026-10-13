@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<!--
+ImgFetch - smart image downloader
+Copyright (C) 2026 ImgFetch Developer
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>ImgFetch Settings</title>
+  <link rel="stylesheet" href="../shared/ui.css">
+  <style>
+    body { margin: 0; padding: 0; }
+    .settings-shell {
+      display: grid;
+      grid-template-columns: 232px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+    /* ---------- sidebar ---------- */
+    .side-nav {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 12px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .side-brand {
+      display: flex; align-items: center; gap: 10px;
+      padding: 4px 10px 16px;
+    }
+    .side-brand .brand-mark { width: 32px; height: 32px; font-size: 17px; }
+    .side-brand strong { font-size: 15px; display: block; }
+    .side-brand > div span { font-size: 11px; color: var(--muted); display: block; }
+    .side-nav button {
+      display: flex; align-items: center; width: 100%;
+      padding: 9px 12px; margin: 1px 0;
+      background: transparent; border: 0; border-radius: 8px;
+      color: var(--text); font-size: 13.5px; cursor: pointer; text-align: left;
+    }
+    .side-nav button:hover { background: var(--surface-2); }
+    .side-nav button:focus-visible { outline: none; box-shadow: var(--focus); }
+    .side-nav button[aria-current="true"] {
+      background: var(--surface-2); color: var(--primary); font-weight: 600;
+    }
+    /* ---------- main ---------- */
+    .settings-main { padding: 30px 32px 70px; max-width: 740px; }
+    .page-head { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+    .page-head h1 { font-size: 21px; margin: 0; }
+    .page-head p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+    #saveState { color: var(--muted); font-size: 12px; }
+    #saveState.saving { color: var(--primary); }
+    #saveState.error { color: var(--danger); }
+    .opt-section[hidden] { display: none; }
+    .opt-section .card { margin-bottom: 0; }
+    .nav-compact { display: none; margin-bottom: 16px; }
+    .radio-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; cursor: pointer; }
+    .radio-row .hint { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
+    .site-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .site-row:last-child { border-bottom: 0; }
+    .range-val { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 44px; text-align: right; }
+    details.tokens { margin-top: 8px; }
+    details.tokens summary { cursor: pointer; font-size: 13px; color: var(--primary); }
+    .kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0 0 12px; }
+    .kv dt { font-weight: 600; font-size: 13px; }
+    .kv dd { margin: 0; font-size: 13px; }
+    .perm-list { margin: 6px 0 0; padding-left: 18px; font-size: 13px; color: var(--muted); }
+    .perm-list li { margin: 3px 0; }
+    .about-logo { width: 64px; height: 64px; border-radius: 16px; }
+    /* Gentle entrance when switching sections, no jank, respects reduced motion */
+    @media (prefers-reduced-motion: no-preference) {
+      .opt-section:not([hidden]) { animation: section-in 0.22s ease; }
+      @keyframes section-in {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: none; }
+      }
+    }
+    @media (max-width: 680px) {
+      .settings-shell { grid-template-columns: 1fr; }
+      .side-nav { display: none; }
+      .nav-compact { display: block; }
+      .settings-main { padding: 20px 16px 60px; }
+    }
+    /* Download history rows (same as popup) */
+    .hist-day { font-weight: 700; font-size: 12.5px; color: var(--muted); margin: 14px 0 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .hist-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .hist-item .fmt { font-size: 10px; font-weight: 700; background: var(--surface-2); border-radius: 6px; padding: 3px 7px; color: var(--muted); text-transform: uppercase; }
+  </style>
+</head>
+<body>
+<div class="settings-shell">
+  <nav class="side-nav" aria-label="Settings sections">
+    <div class="side-brand">
+      <img class="brand-mark" src="../icons/icon-32.png" alt="" aria-hidden="true">
+      <div><strong>ImgFetch</strong><span>Settings</span></div>
+    </div>
+    <button data-section="general" aria-current="true">General</button>
+    <button data-section="downloads" aria-current="false">Downloads</button>
+    <button data-section="quality" aria-current="false">Quality</button>
+    <button data-section="filenames" aria-current="false">File Names</button>
+    <button data-section="scanning" aria-current="false">Scanning</button>
+    <button data-section="screenshots" aria-current="false">Screenshots</button>
+    <button data-section="sites" aria-current="false">Site Preferences</button>
+    <button data-section="shortcuts" aria-current="false">Shortcuts</button>
+    <button data-section="folders" aria-current="false">Folders</button>
+    <button data-section="history" aria-current="false">Download History</button>
+    <button data-section="backup" aria-current="false">Backup &amp; Reset</button>
+    <button data-section="about" aria-current="false">About</button>
+    <button data-section="privacy" aria-current="false">Privacy</button>
+  </nav>
+
+  <main class="settings-main">
+    <div class="page-head">
+      <div>
+        <h1>ImgFetch Settings</h1>
+        <p>Smart Image Downloader · <span id="saveState">All changes saved</span></p>
+      </div>
+    </div>
+
+    <div class="nav-compact">
+      <label class="sr-only" for="navSelect">Settings section</label>
+      <select id="navSelect" aria-label="Settings section">
+        <option value="general">General</option>
+        <option value="downloads">Downloads</option>
+        <option value="quality">Quality</option>
+        <option value="filenames">File Names</option>
+        <option value="scanning">Scanning</option>
+        <option value="screenshots">Screenshots</option>
+        <option value="sites">Site Preferences</option>
+        <option value="shortcuts">Shortcuts</option>
+        <option value="folders">Folders</option>
+        <option value="history">Download History</option>
+        <option value="backup">Backup &amp; Reset</option>
+        <option value="about">About</option>
+        <option value="privacy">Privacy</option>
+      </select>
+    </div>
+
+    <!-- 1. General -->
+    <section class="card opt-section pane-anim" id="general" aria-labelledby="general-h">
+      <h2 class="section-title" id="general-h">General</h2>
+      <p class="section-desc">How ImgFetch looks and behaves.</p>
+      <div class="field">
+        <span class="field-label" id="themeLabel">Appearance</span>
+        <div class="segmented" id="themeSeg" role="group" aria-labelledby="themeLabel">
+          <button data-v="system" aria-pressed="false">System</button>
+          <button data-v="light" aria-pressed="false">Light</button>
+          <button data-v="dark" aria-pressed="false">Dark</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="field-label" id="afterDlLabel">After a download finishes</span>
+        <div class="segmented" id="afterDlSeg" role="group" aria-labelledby="afterDlLabel">
+          <button data-v="silent" aria-pressed="false">Stay quiet</button>
+          <button data-v="notify" aria-pressed="false">Show a notification</button>
+        </div>
+      </div>
+      <label class="switch-row">
+        <span><strong>Close the download panel when finished</strong><span class="hint">The progress view collapses back to the home screen a moment after every download completes.</span></span>
+        <input type="checkbox" class="switch" role="switch" id="autoCollapseQueue">
+      </label>
+    </section>
+
+<!-- 2. Downloads -->
+    <section class="card opt-section pane-anim" id="downloads" aria-labelledby="downloads-h" hidden>
+      <h2 class="section-title" id="downloads-h">Downloads</h2>
+      <p class="section-desc">How files are saved to your device.</p>
+      <label class="switch-row">
+        <span><strong>Ask where to save each file</strong><span class="hint">Shows the browser's Save dialog for every download.</span></span>
+        <input type="checkbox" class="switch" role="switch" id="saveAsDialog">
+      </label>
+      <label class="switch-row">
+        <span><strong>Automatically retry failed downloads</strong><span class="hint">If a download fails to start, ImgFetch tries one more time on its own.</span></span>
+        <input type="checkbox" class="switch" role="switch" id="autoRetryOnce">
+      </label>
+      <div class="field">
+        <span class="field-label" id="concLabel">Simultaneous downloads: <span class="range-val" id="maxConcVal">3</span></span>
+        <input type="range" id="maxConcurrent" min="1" max="6" step="1" value="3" aria-labelledby="concLabel">
+        <span class="hint">Higher is faster for many images, but some sites may throttle you.</span>
+      </div>
+    </section>
+
+<!-- 3. Quality -->
+    <section class="card opt-section pane-anim" id="quality" aria-labelledby="quality-h" hidden>
+      <h2 class="section-title" id="quality-h">Quality</h2>
+      <p class="section-desc">ImgFetch saves the best genuine source it can verify. It never upscales an image.</p>
+      <fieldset class="field" style="border:0; padding:0; margin:0 0 14px;">
+        <legend class="field-label">Smart quality selection</legend>
+        <label class="radio-row"><input type="radio" name="qualityPreference" value="smart">
+          <span><strong>Smart Download (recommended)</strong><span class="hint">Checks every available source and saves the best genuine version it can verify.</span></span></label>
+        <label class="radio-row"><input type="radio" name="qualityPreference" value="original">
+          <span><strong>Prefer the exact source</strong><span class="hint">Skips the extra quality check and saves the exact image the page shows. Faster and more private.</span></span></label>
+      </fieldset>
+      <div class="field">
+        <span class="field-label" id="jpgQLabel">JPG quality: <span class="range-val" id="jpgQVal">100%</span></span>
+        <input type="range" id="jpgQuality" min="0.1" max="1" step="0.01" value="1" aria-labelledby="jpgQLabel">
+        <span class="hint">Used when converting to JPG. Higher means bigger files.</span>
+      </div>
+      <div class="field">
+        <span class="field-label" id="pngQLabel">PNG quality: <span class="range-val" id="pngQVal">100%</span></span>
+        <input type="range" id="pngQuality" min="0.1" max="1" step="0.01" value="1" aria-labelledby="pngQLabel" aria-describedby="pngQHint">
+        <span class="hint" id="pngQHint">100% is lossless. Lower values reduce colours to make smaller files.</span>
+      </div>
+      <div class="field">
+        <span class="field-label" id="webpQLabel">WebP quality: <span class="range-val" id="webpQVal">100%</span></span>
+        <input type="range" id="webpQuality" min="0.1" max="1" step="0.01" value="1" aria-labelledby="webpQLabel">
+        <span class="hint">Used when converting to WebP.</span>
+      </div>
+      <div class="field">
+        <span class="field-label">Other formats</span>
+        <dl class="kv small">
+          <dt>AVIF</dt><dd>Highest quality, always 100%.</dd>
+          <dt>GIF</dt><dd>Fixed 256-color palette (ImgFetch's own encoder).</dd>
+          <dt>BMP</dt><dd>Uncompressed, always 100%.</dd>
+          <dt>SVG</dt><dd>Vector wrapper around the image.</dd>
+        </dl>
+      </div>
+    </section>
+
+<!-- 6. File Names -->
+    <section class="card opt-section pane-anim" id="filenames" aria-labelledby="filenames-h" hidden>
+      <h2 class="section-title" id="filenames-h">File Names</h2>
+      <p class="section-desc">ImgFetch always makes file names safe, no strange characters, ever.</p>
+      <fieldset class="field" style="border:0; padding:0; margin:0 0 14px;">
+        <legend class="field-label">Naming</legend>
+        <label class="radio-row"><input type="radio" name="filenameMode" value="original">
+          <span><strong>Keep the original name</strong><span class="hint">Uses the image's own file name, cleaned up.</span></span></label>
+        <label class="radio-row"><input type="radio" name="filenameMode" value="site">
+          <span><strong>Site + date + number</strong><span class="hint">Example: example - 2026-10-02 - 001.jpg</span></span></label>
+        <label class="radio-row"><input type="radio" name="filenameMode" value="custom">
+          <span><strong>Custom template</strong><span class="hint">Build your own pattern below.</span></span></label>
+      </fieldset>
+      <div class="field" id="customTemplateWrap" hidden>
+        <label for="customTemplate">Custom template</label>
+        <input type="text" id="customTemplate" maxlength="160" placeholder="{site} - {date} - {num}">
+        <details class="tokens">
+          <summary>Available tokens</summary>
+          <p class="small muted">{site} {name} {date} {time} {width} {height} {dimensions} {num}</p>
+        </details>
+      </div>
+      <label class="switch-row">
+        <span><strong>Let me rename files before downloading</strong><span class="hint">Opens a small rename sheet with a preview before single downloads from the right-click menu.</span></span>
+        <input type="checkbox" class="switch" role="switch" id="askFilename">
+      </label>
+    </section>
+
+<!-- 4. Scanning -->
+    <section class="card opt-section pane-anim" id="scanning" aria-labelledby="scanning-h" hidden>
+      <h2 class="section-title" id="scanning-h">Scanning</h2>
+      <p class="section-desc">How ImgFetch finds images on a page.</p>
+      <div class="field">
+        <label for="minSizePreset">Skip images smaller than</label>
+        <select id="minSizePreset">
+          <option value="any">Don't skip any</option>
+          <option value="medium">Medium (400 px)</option>
+          <option value="large">Large (1200 px)</option>
+          <option value="xlarge">Very large (2000 px)</option>
+        </select>
+        <span class="hint">Hides tiny icons and spacers from results. You can still change this per scan.</span>
+      </div>
+      <label class="switch-row">
+        <span><strong>Include background images</strong><span class="hint">Also finds images used as page backgrounds (slower on huge pages).</span></span>
+        <input type="checkbox" class="switch" role="switch" id="includeBackgrounds">
+      </label>
+      <div class="field">
+        <span class="field-label" id="scanDepthLabel">Scan depth</span>
+        <div class="segmented" id="scanDepthSeg" role="group" aria-labelledby="scanDepthLabel">
+          <button data-v="loaded" aria-pressed="false">Loaded page</button>
+          <button data-v="scroll" aria-pressed="false">Scroll page</button>
+        </div>
+        <span class="hint"><strong>Loaded page:</strong> scans only images already loaded (fastest). <strong>Scroll page:</strong> briefly scrolls through the page first to reveal lazy-loaded images, then restores your position.</span>
+      </div>
+      <label class="switch-row">
+        <span><strong>Remove duplicate images</strong><span class="hint">When the same image appears in several sizes, keep only the largest and hide the rest.</span></span>
+        <input type="checkbox" class="switch" role="switch" id="dedupeScan">
+      </label>
+    </section>
+
+<!-- 5. Screenshots -->
+    <section class="card opt-section pane-anim" id="screenshots" aria-labelledby="screenshots-h" hidden>
+      <h2 class="section-title" id="screenshots-h">Screenshots</h2>
+      <p class="section-desc">Defaults for page captures.</p>
+      <div class="field">
+        <span class="field-label" id="shotFormatLabel">Default format</span>
+        <div class="segmented" id="shotFormatSeg" role="group" aria-labelledby="shotFormatLabel">
+          <button data-v="png" aria-pressed="false">PNG</button>
+          <button data-v="jpg" aria-pressed="false">JPG</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="field-label" id="shotQLabel">Quality: <span class="range-val" id="shotQVal">100%</span></span>
+        <input type="range" id="screenshotQuality" min="0.1" max="1" step="0.01" value="1" aria-labelledby="shotQLabel">
+      </div>
+      <div class="field">
+        <span class="field-label">Capture now</span>
+        <div class="row" style="flex-wrap:wrap;">
+          <button id="shotNowVisible" class="btn btn-ghost btn-sm">Visible area</button>
+          <button id="shotNowArea" class="btn btn-ghost btn-sm">Select area</button>
+          <button id="shotNowElement" class="btn btn-ghost btn-sm">Capture element</button>
+          <button id="shotNowFull" class="btn btn-ghost btn-sm">Full page</button>
+        </div>
+        <span class="hint">“Select area” opens a real selection overlay on the current page, drag a rectangle, press Esc to cancel. “Capture element” lets you click any element to capture exactly that.</span>
+      </div>
+      <label class="switch-row">
+        <span><strong>Open the annotation editor after capturing</strong><span class="hint">Draw arrows, add text, or blur parts of the screenshot before saving it.</span></span>
+        <input type="checkbox" class="switch" role="switch" id="annotateAfterCapture">
+      </label>
+    </section>
+
+<!-- 9. Site Preferences -->
+    <section class="card opt-section pane-anim" id="sites" aria-labelledby="sites-h" hidden>
+      <h2 class="section-title" id="sites-h">Site Preferences</h2>
+      <p class="section-desc">Give specific websites their own download behavior.</p>
+      <div class="row" style="margin-bottom:10px;">
+        <input type="text" id="siteHost" placeholder="example.com" aria-label="Website domain" style="flex:1;">
+        <button id="btnCurrentSite" class="btn btn-sm btn-ghost">Use current site</button>
+        <button id="btnAddSite" class="btn btn-sm btn-primary">Add</button>
+      </div>
+      <div id="siteList"></div>
+      <p class="small muted" style="margin-top:10px;"><strong>Smart</strong> finds the best genuine source on this site · <strong>As shown</strong> saves images exactly as displayed · <strong>Paused</strong> disables ImgFetch downloads on this site.</p>
+    </section>
+
+<!-- 8. Shortcuts -->
+    <section class="card opt-section pane-anim" id="shortcuts" aria-labelledby="shortcuts-h" hidden>
+      <h2 class="section-title" id="shortcuts-h">Shortcuts</h2>
+      <p class="section-desc">Keyboard shortcuts currently assigned to ImgFetch.</p>
+      <div id="shortcutList"><p class="small muted">Loading…</p></div>
+      <div class="row" style="margin-top:12px; flex-wrap:wrap;">
+        <button id="btnCopyShortcutLink" class="btn btn-ghost btn-sm">Copy shortcuts page link</button>
+      </div>
+      <p class="small muted">To change a shortcut, open <strong>chrome://extensions/shortcuts</strong> (or <strong>edge://extensions/shortcuts</strong> in Edge), find ImgFetch, and set your preferred keys. On Mac, use ⌘ instead of Ctrl. If a shortcut shows “Not set”, the suggested key clashed with the browser or another extension, set it manually here.</p>
+    </section>
+
+<!-- 7. Folders -->
+    <section class="card opt-section pane-anim" id="folders" aria-labelledby="folders-h" hidden>
+      <h2 class="section-title" id="folders-h">Folders</h2>
+      <p class="section-desc">Files are saved inside your browser's Downloads folder. These options organize them further.</p>
+      <div class="field">
+        <label for="folderMode">Organize downloads into</label>
+        <select id="folderMode">
+          <option value="flat">One place (no smart folders)</option>
+          <option value="site">Folders by website</option>
+          <option value="type">Smart folders by type</option>
+          <option value="date">Folders by date</option>
+        </select>
+        <span class="hint">Smart folders sorts automatically: Photos, Screenshots, GIFs, Graphics. “By website” example: Downloads / example.com / photo.jpg</span>
+      </div>
+      <div class="field">
+        <label class="switch-row">
+          <span><strong>Use a default subfolder</strong><span class="hint">When on, everything saves inside this folder first, on top of the organization above.</span></span>
+          <input type="checkbox" class="switch" role="switch" id="useSubfolder">
+        </label>
+      </div>
+      <div class="field">
+        <label for="subfolder">Subfolder name</label>
+        <input type="text" id="subfolder" maxlength="120" placeholder="e.g. ImgFetch">
+        <span class="hint">Example: Downloads / ImgFetch / example.com / photo.jpg. Ignored while the toggle is off.</span>
+      </div>
+    </section>
+
+<!-- 11. Download History -->
+    <section class="card opt-section pane-anim" id="history" aria-labelledby="history-h" hidden>
+      <h2 class="section-title" id="history-h">Download History</h2>
+      <p class="section-desc">A simple list of what you saved, shown in the popup.</p>
+      <div class="field">
+        <span class="field-label">Recent downloads</span>
+        <div id="optHistoryList"></div>
+      </div>
+      <label class="switch-row">
+        <span><strong>Keep download history</strong><span class="hint">Stores the file name, site, format, and size of each download.</span></span>
+        <input type="checkbox" class="switch" role="switch" id="historyEnabled">
+      </label>
+      <div class="field">
+        <label for="historyRetentionDays">Keep history for (days)</label>
+        <input type="number" id="historyRetentionDays" min="1" max="365" step="1" style="max-width:120px;">
+        <span class="hint">Entries older than this are removed automatically.</span>
+      </div>
+      <div class="field">
+        <span class="field-label">Clear now</span>
+        <div class="row" style="flex-wrap:wrap;">
+          <button id="btnClearHistory" class="btn btn-ghost">Clear download history</button>
+        </div>
+        <span class="hint">Removes all history entries immediately. Downloaded files are not affected.</span>
+      </div>
+    </section>
+
+<!-- 12. Backup & Reset -->
+    <section class="card opt-section pane-anim" id="backup" aria-labelledby="backup-h" hidden>
+      <h2 class="section-title" id="backup-h">Backup &amp; Reset</h2>
+      <p class="section-desc">Take your settings with you, or start fresh.</p>
+      <div class="field">
+        <span class="field-label">Export settings</span>
+        <div class="row" style="flex-wrap:wrap;">
+          <button id="btnExport" class="btn btn-ghost">Export settings</button>
+        </div>
+        <span class="hint">Downloads a <strong>imgfetch-settings.json</strong> file with all your settings.</span>
+      </div>
+      <div class="field">
+        <span class="field-label">Import settings</span>
+        <div class="row" style="flex-wrap:wrap;">
+          <button id="btnImport" class="btn btn-ghost">Import settings</button>
+          <input type="file" id="importFile" accept="application/json" class="sr-only" aria-label="Import settings file">
+        </div>
+        <span class="hint">Restores settings from a ImgFetch export file. Invalid files are rejected safely.</span>
+      </div>
+      <div class="field">
+        <span class="field-label">Reset to defaults</span>
+        <div class="row" style="flex-wrap:wrap;">
+          <button id="btnReset" class="btn btn-danger">Reset everything</button>
+        </div>
+        <span class="hint">Asks for confirmation first, then restores all ImgFetch defaults. History is kept unless you clear it above.</span>
+      </div>
+    </section>
+
+<!-- 11. About -->
+    <section class="card opt-section pane-anim" id="about" aria-labelledby="about-h" hidden>
+      <h2 class="section-title" id="about-h">About</h2>
+      <div class="row" style="align-items:center; gap:14px; margin-bottom:14px;">
+        <img class="about-logo" src="../icons/icon-128.png" alt="ImgFetch logo">
+        <div>
+          <div style="font-size:17px; font-weight:700;">ImgFetch</div>
+          <div class="small muted" id="aboutTagline">Smart Image Downloader</div>
+        </div>
+      </div>
+      <dl class="kv">
+        <dt>Version</dt><dd id="aboutVersion">–</dd>
+      </dl>
+      <h3 class="section-title" style="font-size:14px; margin:14px 0 6px;">Licence</h3>
+      <p class="small muted" id="aboutLicence">ImgFetch, Copyright (C) 2026 ImgFetch Developer. This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under the conditions of the GNU General Public License v3 or later. <a id="aboutLicenceLink" href="#">View the full licence</a>.</p>
+      <h3 class="section-title" style="font-size:14px; margin:14px 0 6px;">Permissions</h3>
+      <p class="small muted" style="margin:0 0 4px;">What ImgFetch can access, and why:</p>
+      <ul class="perm-list" id="aboutPermissions"><li>Loading…</li></ul>
+      <h3 class="section-title" style="font-size:14px; margin:14px 0 6px;">Documentation</h3>
+      <p class="small muted">Documentation, the privacy policy and the terms of use live in the public repository: <a id="aboutRepoLink" href="#">github.com/umr-x/imgfetch</a>.</p>
+      <h3 class="section-title" style="font-size:14px; margin:14px 0 6px;">Privacy</h3>
+      <p class="small muted">ImgFetch has no server and collects nothing. Only the images you choose to download are fetched, and Google Lens (only if you click it) opens Google with the image address. See <a id="aboutPrivacyLink" href="#">PRIVACY.md</a> in the repository for the full statement.</p>
+    </section>
+
+<!-- 10. Privacy -->
+    <section class="card opt-section pane-anim" id="privacy" aria-labelledby="privacy-h" hidden>
+      <h2 class="section-title" id="privacy-h">Privacy</h2>
+      <p class="section-desc">ImgFetch keeps everything on your device. No accounts, no tracking, no analytics.</p>
+      <h3 class="section-title" style="font-size:14px; margin:14px 0 6px;">What ImgFetch stores</h3>
+      <ul class="perm-list">
+        <li>Your settings, site preferences, and download history live in your browser's local storage, on this device only.</li>
+        <li>Downloaded images go straight to your Downloads folder. ImgFetch never uploads them anywhere.</li>
+      </ul>
+      <h3 class="section-title" style="font-size:14px; margin:14px 0 6px;">What ImgFetch never does</h3>
+      <ul class="perm-list">
+        <li>No accounts and no sign-in, there is nothing to log into.</li>
+        <li>No analytics, no telemetry, no crash reporting.</li>
+        <li>No remote code, every script ships inside the extension package.</li>
+        <li>Images are fetched directly from the sites you visit, using your normal browser session. ImgFetch adds no tracking parameters.</li>
+      </ul>
+      <h3 class="section-title" style="font-size:14px; margin:14px 0 6px;">Permissions</h3>
+      <p class="small muted" style="margin:0;">Why ImgFetch asks for each permission is explained in the <strong>About</strong> section, and the full statement is <strong>PRIVACY.md</strong> in the public repository.</p>
+    </section>
+  </main>
+</div>
+
+  <script src="../shared/ui.js"></script>
+  <script type="module" src="options.js"></script>
+</body>
+</html>

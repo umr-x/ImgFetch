@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<!--
+ImgFetch - smart image downloader
+Copyright (C) 2026 ImgFetch Developer
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Welcome to ImgFetch</title>
+  <link rel="stylesheet" href="../shared/ui.css">
+  <style>
+    body { max-width: 560px; margin: 0 auto; padding: 48px 20px; text-align: center; }
+    .glyph {
+      width: 76px; height: 76px; border-radius: 20px; margin: 0 auto 18px;
+      background: linear-gradient(135deg, #6c63ff 0%, #4a3fd1 55%, #22d3ee 130%);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 36px; font-weight: 800;
+      box-shadow: 0 10px 30px rgba(91, 80, 230, 0.4);
+    }
+    h1 { font-size: 24px; margin: 0 0 8px; letter-spacing: -0.3px; }
+    .step { display: none; }
+    .step.active { display: block; animation: sx-fade 0.25s ease; }
+    @keyframes sx-fade { from { opacity: 0; transform: translateY(6px); } }
+    .step p { color: var(--muted); font-size: 14px; max-width: 420px; margin: 0 auto 18px; }
+    .dots { display: flex; gap: 6px; justify-content: center; margin: 22px 0; }
+    .dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+    .dots i.on { background: var(--primary); }
+    .nav-row { display: flex; gap: 10px; justify-content: center; }
+    .kbd-row { display: flex; gap: 18px; justify-content: center; margin: 6px 0 18px; flex-wrap: wrap; }
+    .kbd-row div { font-size: 13px; color: var(--muted); }
+    kbd { background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 2px 7px; font: 600 12px var(--font); }
+    /* Mini settings on the "Make it yours" step, compact, left-aligned. */
+    .mini-opts { max-width: 430px; margin: 6px auto 18px; text-align: left; display: grid; gap: 12px; }
+    .mini-row { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; }
+    .mini-row > span strong, .mini-row > label strong { display: block; font-size: 13.5px; }
+    .mini-row .hint { display: block; font-size: 12px; color: var(--muted); font-weight: 400; margin-top: 2px; }
+    .mini-row input[type="text"] { width: 150px; background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); padding: 7px 10px; font: 500 13px var(--font); }
+    .linklike { background: none; border: 0; color: var(--primary); font: 600 13px var(--font); cursor: pointer; padding: 4px; }
+    .linklike:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <img class="glyph" src="../icons/icon-128.png" alt="" aria-hidden="true">
+
+  <div class="step active" data-step="0">
+    <h1>Welcome to ImgFetch</h1>
+    <p>Your smart image downloader. Save any image in the best available version, scan whole pages at once, and capture screenshots, all from one tidy menu.</p>
+  </div>
+
+  <div class="step" data-step="1">
+    <h1>Right-click any image</h1>
+    <p>The <strong>ImgFetch</strong> menu lets you download the image as shown, in best quality, or as the original, or convert it to PNG, JPG or WebP on the fly.</p>
+  </div>
+
+  <div class="step" data-step="2">
+    <h1>Scan pages & capture screens</h1>
+    <p>Click the ImgFetch toolbar button to scan a whole page for images, or take screenshots of the visible page or any area you select.</p>
+    <div class="kbd-row" id="shortcutRow">
+      <div><span id="scScan">…</span>, scan page</div>
+      <div><span id="scCapture">…</span>, capture area</div>
+    </div>
+  </div>
+
+  <div class="step" data-step="3">
+    <h1>Make it yours</h1>
+    <p>Five quick choices, everything else already has a sensible default. You can change these anytime in Settings.</p>
+    <div class="mini-opts">
+      <label class="mini-row">
+        <span><strong>Open the editor after screenshots</strong><span class="hint">Draw arrows, add text, or blur before saving.</span></span>
+        <input type="checkbox" class="switch" role="switch" id="wAnnotate">
+      </label>
+      <div class="mini-row">
+        <span><strong>When downloads finish</strong></span>
+        <div class="segmented" id="wAfterDl" role="group" aria-label="When downloads finish">
+          <button data-v="silent" aria-pressed="false">Stay quiet</button>
+          <button data-v="notify" aria-pressed="false">Notify me</button>
+        </div>
+      </div>
+      <div class="mini-row">
+        <span><strong>Save into subfolder</strong><span class="hint">Empty = straight into Downloads.</span></span>
+        <input type="text" id="wSubfolder" maxlength="120" placeholder="e.g. ImgFetch" aria-label="Subfolder name">
+      </div>
+      <label class="mini-row">
+        <span><strong>Ask file name before single downloads</strong></span>
+        <input type="checkbox" class="switch" role="switch" id="wAskName">
+      </label>
+      <div style="text-align:center"><button class="linklike" id="wFullSettings">Open full settings →</button></div>
+    </div>
+  </div>
+
+  <div class="dots" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i></div>
+  <div class="nav-row">
+    <button id="btnBack" class="btn btn-ghost" hidden>Back</button>
+    <button id="btnNext" class="btn btn-primary">Next</button>
+  </div>
+
+  <script src="../shared/ui.js"></script>
+  <script src="welcome.js"></script>
+</body>
+</html>

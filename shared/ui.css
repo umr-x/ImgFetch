@@ -1,0 +1,292 @@
+/*
+ * ImgFetch - smart image downloader
+ * Copyright (C) 2026 ImgFetch Developer
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+/**
+ * ImgFetch design system — shared by popup, options and pages.
+ * Theme: [data-theme="light"|"dark"] on <html>; "system" resolves in JS.
+ */
+:root {
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --primary: #5b50e6;
+  --primary-strong: #4a3fd1;
+  --primary-soft: rgba(91, 80, 230, 0.12);
+  --accent: #22d3ee;
+  --bg: #f6f7fb;
+  --surface: #ffffff;
+  --surface-2: #eef0f7;
+  --text: #1a1d2e;
+  --muted: #6b7089;
+  --border: #e2e5f0;
+  --danger: #e5484d;
+  --success: #2f9e6e;
+  --warning: #e8930c;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 6px 24px rgba(26, 29, 46, 0.08);
+  --focus: 0 0 0 3px rgba(91, 80, 230, 0.35);
+}
+[data-theme="dark"] {
+  --bg: #0f1222;
+  --surface: #171a2e;
+  --surface-2: #20243c;
+  --text: #f1f2fa;
+  --muted: #a2a7c4;
+  --border: #2a2e4d;
+  --primary-soft: rgba(124, 114, 255, 0.16);
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- smooth theme cross-fade (applied briefly by UI.applyTheme) ---------- */
+.theme-fade body,
+.theme-fade body *,
+.theme-fade body *::before,
+.theme-fade body *::after {
+  transition: background-color 0.28s ease, color 0.28s ease,
+    border-color 0.28s ease, outline-color 0.28s ease,
+    fill 0.28s ease, stroke 0.28s ease !important;
+}
+
+/* ---------- brand ---------- */
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark {
+  width: 32px; height: 32px; border-radius: 9px; flex: none;
+  background: linear-gradient(135deg, #6c63ff 0%, #4a3fd1 55%, #22d3ee 130%);
+  display: inline-flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: 18px; letter-spacing: -0.5px;
+  box-shadow: 0 3px 10px rgba(91, 80, 230, 0.4);
+  /* NOTE: never let a broader selector (e.g. ".side-brand span") override
+     display/color here — that silently broke centering once. */
+}
+.brand-name { font-weight: 700; font-size: 16px; letter-spacing: -0.2px; }
+.brand-sub { font-size: 11px; color: var(--muted); margin-top: -3px; }
+/* Brand tile is now the logo image itself (icon-32.png); keep it a plain
+   block so flex centering rules for the old letter mark never apply. */
+img.brand-mark { display: block; }
+
+/* ---------- buttons ---------- */
+.btn {
+  appearance: none; border: 1px solid transparent; border-radius: var(--radius-sm);
+  font: 600 13px/1.2 var(--font); padding: 9px 14px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  transition: transform 0.06s ease, box-shadow 0.15s ease, background 0.15s ease;
+  text-decoration: none; color: inherit; background: var(--surface-2);
+}
+.btn:active { transform: translateY(1px); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus); }
+.btn-primary { background: var(--primary); color: #fff; box-shadow: 0 3px 12px rgba(91, 80, 230, 0.35); }
+.btn-primary:hover { background: var(--primary-strong); }
+.btn-ghost { background: transparent; border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface-2); }
+.btn-danger { background: rgba(229, 72, 77, 0.12); color: var(--danger); }
+.btn-sm { padding: 6px 10px; font-size: 12px; }
+.btn-block { width: 100%; }
+.btn[disabled] { opacity: 0.55; cursor: not-allowed; }
+.icon-btn {
+  appearance: none; background: transparent; border: 0; border-radius: 8px;
+  width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--muted); font-size: 16px;
+}
+.icon-btn:hover { background: var(--surface-2); color: var(--text); }
+.icon-btn:focus-visible { outline: none; box-shadow: var(--focus); }
+
+/* ---------- inputs ---------- */
+.field { display: flex; flex-direction: column; gap: 6px; margin: 0 0 14px; }
+.field > label, .field-label { font-weight: 600; font-size: 13px; }
+.field .hint { font-size: 12px; color: var(--muted); }
+input[type="text"], input[type="number"], select, textarea {
+  font: 400 13px var(--font); color: var(--text);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 9px 11px; width: 100%;
+}
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; box-shadow: var(--focus); border-color: var(--primary); }
+input[type="range"] { width: 100%; accent-color: var(--primary); }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--primary); width: 16px; height: 16px; }
+.check-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; cursor: pointer; }
+.check-row .hint { display: block; font-weight: 400; }
+
+/* ---------- toggle switch (binary ON/OFF only) ---------- */
+/* Native checkbox restyled as a pill; role="switch" keeps AT semantics.
+   No ON/OFF text inside; ~40px target; honors prefers-reduced-motion. */
+.switch-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  min-height: 40px; padding: 8px 0; cursor: pointer;
+}
+.switch-row .hint { display: block; font-weight: 400; }
+input.switch {
+  -webkit-appearance: none; appearance: none; flex: none;
+  width: 44px; height: 26px; margin: 0; padding: 0; border: none;
+  border-radius: 999px; background: var(--border);
+  position: relative; cursor: pointer; outline: none;
+  transition: background-color 0.18s ease;
+}
+input.switch::after {
+  content: ""; position: absolute; top: 3px; left: 3px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--surface); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.18s ease;
+}
+input.switch:checked { background: var(--primary); }
+input.switch:checked::after { transform: translateX(18px); }
+input.switch:focus-visible { box-shadow: var(--focus); }
+input.switch:disabled { opacity: 0.5; cursor: not-allowed; }
+@media (prefers-reduced-motion: reduce) {
+  input.switch, input.switch::after { transition: none; }
+}
+
+/* segmented control */
+.segmented { display: inline-flex; background: var(--surface-2); border-radius: 10px; padding: 3px; gap: 2px; }
+.segmented button {
+  border: 0; background: transparent; color: var(--muted); font: 600 12px var(--font);
+  padding: 7px 12px; border-radius: 8px; cursor: pointer; white-space: nowrap;
+}
+.segmented button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+
+/* chips */
+.chip {
+  border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+  font: 600 12px var(--font); border-radius: 999px; padding: 6px 12px; cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--primary-soft); border-color: var(--primary); color: var(--primary-strong); }
+[data-theme="dark"] .chip[aria-pressed="true"] { color: #b9b3ff; }
+
+/* ---------- layout ---------- */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px;
+}
+.section-title { font-size: 15px; font-weight: 700; margin: 0 0 4px; }
+.section-desc { font-size: 12.5px; color: var(--muted); margin: 0 0 14px; }
+.divider { border: 0; border-top: 1px solid var(--border); margin: 16px 0; }
+.row { display: flex; align-items: center; gap: 10px; }
+.spread { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+
+/* ---------- progress ---------- */
+.progress { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.progress > i { display: block; height: 100%; width: 0%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.25s ease; }
+.spinner {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 3px solid var(--surface-2); border-top-color: var(--primary);
+  animation: sx-spin 0.8s linear infinite; margin: 24px auto;
+}
+@keyframes sx-spin { to { transform: rotate(360deg); } }
+
+/* ---------- image grid ---------- */
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+/* B6: the zoom control is a sibling of the thumb button, not nested inside
+ * it — nested interactive controls are invalid HTML and confuse screen
+ * readers. The wrapper carries the positioning context. */
+.thumb-wrap { position: relative; }
+.thumb {
+  position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden;
+  background: var(--surface-2); border: 2px solid transparent; cursor: pointer; padding: 0;
+  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+  width: 100%;
+}
+.thumb-wrap:hover .thumb { transform: translateY(-2px); box-shadow: var(--shadow); }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Blob: thumbnails resolve async — shimmer until the preview arrives. */
+@keyframes sx-shimmer { 0% { opacity: .45; } 50% { opacity: 1; } 100% { opacity: .45; } }
+.thumb img.thumb-loading {
+  animation: sx-shimmer 1.2s ease-in-out infinite;
+  background: linear-gradient(100deg, var(--surface-2) 40%, var(--surface) 50%, var(--surface-2) 60%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .thumb img.thumb-loading { animation: none; }
+}
+.thumb[aria-checked="true"] { border-color: var(--primary); }
+.thumb .tick {
+  position: absolute; top: 6px; left: 6px; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--primary); color: #fff; font-size: 13px; font-weight: 700;
+  display: none; align-items: center; justify-content: center;
+}
+.thumb[aria-checked="true"] .tick { display: inline-flex; }
+/* D2: magnifier opens the preview; visible on hover/focus, always on touch. */
+.thumb-wrap .zoom-btn {
+  position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(10, 12, 25, 0.72); color: #fff; border: 0; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity .15s ease;
+}
+.thumb-wrap:hover .zoom-btn, .thumb-wrap:focus-within .zoom-btn { opacity: 1; }
+@media (hover: none) {
+  .thumb-wrap .zoom-btn { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .thumb-wrap .zoom-btn { transition: none; }
+}
+.thumb .dims {
+  position: absolute; left: 6px; bottom: 6px; font-size: 10px; font-weight: 600;
+  background: rgba(10, 12, 25, 0.72); color: #fff; padding: 2px 7px; border-radius: 999px;
+}
+.thumb:focus-visible { outline: none; box-shadow: var(--focus); }
+
+/* ---------- modal ---------- */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(10, 12, 25, 0.55);
+  display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px;
+}
+.modal {
+  background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow);
+  max-width: 480px; width: 100%; max-height: 92vh; overflow: auto; padding: 18px;
+}
+.modal img.preview { width: 100%; border-radius: 8px; background: var(--surface-2); max-height: 300px; object-fit: contain; }
+
+/* ---------- toast ---------- */
+.toast-stack { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 100;
+  display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; width: max-content; max-width: 92vw; }
+.toast {
+  background: #171a2e; color: #fff; font-size: 13px; padding: 10px 16px; border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35); animation: sx-toast-in 0.22s ease;
+  max-width: 92vw; text-align: center;
+}
+@keyframes sx-toast-in { from { opacity: 0; transform: translateY(8px); } }
+
+/* ---------- empty / notice ---------- */
+.empty { text-align: center; padding: 34px 18px; color: var(--muted); }
+.empty .glyph { font-size: 34px; margin-bottom: 8px; }
+.notice {
+  border-radius: var(--radius-sm); padding: 10px 12px; font-size: 12.5px;
+  background: var(--primary-soft); border: 1px solid var(--border); margin: 10px 0;
+}
+.notice.warn { background: rgba(232, 147, 12, 0.12); }
+.notice.error { background: rgba(229, 72, 77, 0.1); }
+
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Pane enter animation — replays every time `hidden` is removed (display
+   flips from none), so view/pane switches feel smooth instead of instant.
+   Honors prefers-reduced-motion via the block below. */
+@keyframes sx-pane-in { from { opacity: 0; transform: translateY(5px); } }
+.pane-anim { animation: sx-pane-in 0.18s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

@@ -1,0 +1,75 @@
+{
+  "action": {
+    "default_icon": {
+      "128": "icons/icon-128.png",
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png"
+    },
+    "default_popup": "popup/popup.html",
+    "default_title": "ImgFetch \u2014 Smart Image Downloader"
+  },
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "commands": {
+    "imgfetch-capture-area": {
+      "description": "Capture a selected area with ImgFetch",
+      "suggested_key": {
+        "default": "Ctrl+Shift+X"
+      }
+    },
+    "imgfetch-scan-page": {
+      "description": "Scan this page for images with ImgFetch",
+      "suggested_key": {
+        "default": "Ctrl+Shift+S"
+      }
+    },
+    "imgfetch-scan-page-alt": {
+      "description": "Scan this page for images with ImgFetch (alternative \u2014 bind your own key in Settings)"
+    },
+    "imgfetch-select-element": {
+      "description": "Pick a page element and show its image details with ImgFetch",
+      "suggested_key": {
+        "default": "Alt+Shift+E"
+      }
+    },
+    "imgfetch-capture-element": {
+      "description": "Capture a page element with ImgFetch (click the element)",
+      "suggested_key": {
+        "default": "Ctrl+Shift+E"
+      }
+    }
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "description": "ImgFetch \u2014 Smart Image Downloader. Save images in the best quality, scan whole pages, capture screenshots.",
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ],
+  "icons": {
+    "128": "icons/icon-128.png",
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png"
+  },
+  "manifest_version": 3,
+  "minimum_chrome_version": "116",
+  "name": "ImgFetch",
+  "options_page": "options/options.html",
+  "permissions": [
+    "contextMenus",
+    "downloads",
+    "storage",
+    "scripting",
+    "activeTab",
+    "offscreen",
+    "notifications",
+    "clipboardWrite"
+  ],
+  "short_name": "ImgFetch",
+  "version": "1.0.0"
+}

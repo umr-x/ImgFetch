@@ -1,0 +1,111 @@
+{
+  "dpr": 1,
+  "headed": true,
+  "browser": "edge",
+  "phases": [
+    {
+      "name": "P0 worker alive",
+      "ok": true,
+      "evidence": {
+        "extId": "feibeiahafmmdfpmcgdllnbmkcoifhnm"
+      }
+    },
+    {
+      "name": "P1 SCAN_PAGE finds images",
+      "ok": true,
+      "evidence": {
+        "count": 52,
+        "note": "found 52"
+      }
+    },
+    {
+      "name": "P2 DOWNLOAD_MANY files on disk",
+      "ok": true,
+      "evidence": {
+        "expected": 12,
+        "landed": 12,
+        "magicOk": 12,
+        "note": "12/12 files, 12 PNG magic"
+      }
+    },
+    {
+      "name": "P3 stitch 20000px DPR1 via real offscreen (N1)",
+      "ok": true,
+      "evidence": {
+        "plan": {
+          "outW": 1280,
+          "outH": 17280,
+          "tiles": 24,
+          "scale": 1
+        },
+        "file": "stitch-tall20k-dpr1.png",
+        "size": 766741,
+        "dims": {
+          "w": 1280,
+          "h": 17280
+        },
+        "note": "1280x17280 (plan 1280x17280), 766741 bytes"
+      }
+    },
+    {
+      "name": "P4 stitch 3000px baseline via real offscreen",
+      "ok": true,
+      "evidence": {
+        "plan": {
+          "outW": 1280,
+          "outH": 3000,
+          "tiles": 5,
+          "scale": 1
+        },
+        "file": "stitch-tall3k-dpr1.png",
+        "size": 131865,
+        "dims": {
+          "w": 1280,
+          "h": 3000
+        },
+        "note": "1280x3000 (plan 1280x3000), 131865 bytes"
+      }
+    },
+    {
+      "name": "P5 chromeDownloadId persisted immediately (N4)",
+      "ok": true,
+      "evidence": {
+        "picked": 30,
+        "persistedItems": 27,
+        "persistedWithId": 3
+      }
+    },
+    {
+      "name": "P6 DOWNLOAD_ZIP 50 images",
+      "ok": true,
+      "evidence": {
+        "landed": 1,
+        "size": 39029,
+        "isZip": true,
+        "note": "39029 bytes, zip magic true"
+      }
+    },
+    {
+      "name": "P7 100MP canvas probe (N1 area cap)",
+      "ok": true,
+      "evidence": {
+        "offscreenFound": true,
+        "probe": {
+          "ok": true,
+          "ms": 401,
+          "px": 4
+        },
+        "note": "100MP canvas: allocated in 401ms"
+      }
+    },
+    {
+      "name": "P8 zero console.error/pageerror",
+      "ok": true,
+      "evidence": {
+        "note": "0 errors, 0 total entries",
+        "first": []
+      }
+    }
+  ],
+  "errors": []
+}

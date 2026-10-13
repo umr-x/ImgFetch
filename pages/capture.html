@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<!--
+ImgFetch - smart image downloader
+Copyright (C) 2026 ImgFetch Developer
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>ImgFetch, Screenshot preview</title>
+  <link rel="stylesheet" href="../shared/ui.css">
+  <style>
+    body { max-width: 900px; margin: 0 auto; padding: 28px 20px 60px; }
+    .shot-frame { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow); }
+    .shot-frame img { width: 100%; border-radius: 8px; display: block; background: var(--surface-2); }
+    .actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <div class="brand" style="margin-bottom:16px;">
+    <img class="brand-mark" src="../icons/icon-32.png" alt="" aria-hidden="true">
+    <div>
+      <div class="brand-name">ImgFetch</div>
+      <div class="brand-sub">Screenshot preview</div>
+    </div>
+  </div>
+
+  <div id="loading" class="empty">
+    <div class="spinner" role="status" aria-label="Loading"></div>
+    <p>Preparing your screenshot…</p>
+  </div>
+
+  <div id="content" hidden>
+    <div class="shot-frame">
+      <img id="shot" alt="Screenshot preview">
+    </div>
+    <p class="muted small" id="meta" style="margin:10px 2px 0;"></p>
+    <div class="actions">
+      <button id="btnSave" class="btn btn-primary">Save screenshot</button>
+      <button id="btnCopyShot" class="btn btn-ghost">Copy to clipboard</button>
+      <button id="btnRetakeVisible" class="btn btn-ghost">Retake visible page</button>
+      <button id="btnRetakeArea" class="btn btn-ghost">Retake area</button>
+      <button id="btnDiscard" class="btn btn-danger" style="margin-left:auto;">Discard</button>
+    </div>
+  </div>
+
+  <script src="../shared/ui.js"></script>
+  <script src="capture.js"></script>
+</body>
+</html>
