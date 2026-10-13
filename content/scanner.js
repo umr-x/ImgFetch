@@ -1024,7 +1024,7 @@
         occurrences,
       );
       if (SCAN_DEBUG && !r.keep) {
-        console.debug(`[imgfetch:scan] dropped (score ${r.score}): ${c.record.src} — ${r.reasons.join(', ')}`);
+        console.debug(`[imgfetch:scan] dropped (score ${r.score}): ${c.record.src}, ${r.reasons.join(', ')}`);
       }
       if (!r.keep) {
         droppedByRelevance += 1;

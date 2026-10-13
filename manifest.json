@@ -7,7 +7,7 @@
       "48": "icons/icon-48.png"
     },
     "default_popup": "popup/popup.html",
-    "default_title": "ImgFetch \u2014 Smart Image Downloader"
+    "default_title": "ImgFetch Smart Image Downloader"
   },
   "background": {
     "service_worker": "background/service-worker.js",
@@ -27,7 +27,7 @@
       }
     },
     "imgfetch-scan-page-alt": {
-      "description": "Scan this page for images with ImgFetch (alternative \u2014 bind your own key in Settings)"
+      "description": "Scan this page for images with ImgFetch (alternative, bind your own key in Settings)"
     },
     "imgfetch-select-element": {
       "description": "Pick a page element and show its image details with ImgFetch",
@@ -45,7 +45,7 @@
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
-  "description": "ImgFetch \u2014 Smart Image Downloader. Save images in the best quality, scan whole pages, capture screenshots.",
+  "description": "ImgFetch: Smart Image Downloader. Save images in the best quality, scan whole pages, capture screenshots.",
   "host_permissions": [
     "https://*/*",
     "http://*/*"
